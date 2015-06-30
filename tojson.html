@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+
+  // yeah yeah I know this sucks, whatever
+  $.ajaxSetup({
+    async: false
+  });
+
+  // load page contents into invisible divs
+  for (year = 1996; year <= 2015; year++) {
+    var url = 'scrape/' + year + '.html .case-list';
+    $('#data').append("<div id='" + year + "' style='display:none;'></div>");
+    $('#' + year).load(url);
+  }
+
+  // slurp invisible divs to produce JSON
+  var cases = {};
+
+});
+
+</script>
+
+<body>
+  <div id="data"></div>
+</body>
+
+
+</html>
