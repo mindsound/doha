@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DoD Contractor Clearance Adjudication Data</title>
+<link href='http://fonts.googleapis.com/css?family=Fira+Sans:400,400italic|Archivo+Narrow:400,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <div class="intro">
+    <h2>The Defence Office of Hearings and Appeals</h2>
+
+    <p>The U.S. Department of Defense publishes security clearance adjudication appeal decisions on their website as a
+    matter of public record. It is interesting to regard these appeals as a data corpus representing the U.S.
+    government's history of evaluating the trustworthiness of individual contractor employees.</p>
+
+    <blockquote><p><em>The Defense Office of Hearings and Appeals (DOHA), the largest component of the Defense Legal Services
+    Agency, provides hearings and issues decisions in personnel security clearance cases for contractor personnel doing
+    classified work for all DoD components and 24 other Federal Agencies and Departments[.]</em><p>
+
+    <p><a href="http://www.dod.mil/dodgc/doha/">Defense Office of Hearings and Appeals</a></p></blockquote>
+
+    <p>Individuals seeking to
+    appeal an adjudication have already been provided with a "Statement of Reasons" documenting why they
+    should be denied access to sensitive information.  Some of these denials are sustained on appeal,
+    and some are overturned.  These appeals represent the sharp edge of the security clearance process.  What situations cause
+    the U.S. government to declare souls <a
+    href="https://en.wikipedia.org/wiki/Anubis#Weighing_of_the_heart">heavy on the scales</a>?<p>
+
+  </div>
+
+  <div class="visualizations">
+    <h2>Contractor Clearance Adjudication Decisions</h2>
+    <div class="placeholder">Loading data...</div>
+  </div>
+
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+  $(function(){
+    $.get('data/doha.json').done(function(data){
+      processDohaData(data);
+    }).error(function(){
+      alert("Unable to load DOHA JSON data.");
+    });
+  });
+
+  function processDohaData(data) {
+
+    $('.placeholder').replaceWith('<div>Loaded ' + data.length + ' records.</div>');
+
+    // accumulate keyword counts
+    var keywordCounts = {};
+    $.each(data, function(ii, record){
+      $.each(record.keywords, function(jj, keyword){
+        if (keywordCounts[keyword] == null) {
+          keywordCounts[keyword] = 0;
+        }
+
+        keywordCounts[keyword] += 1;
+      });
+    });
+
+    alert(JSON.stringify(keywordCounts, null, 2));
+
+  }
+</script>
+</html>
