@@ -10,7 +10,7 @@ $(function(){
   var pages = [];
 
   // load page contents into invisible divs
-  for (year = 1996; year <= 1996; year++) {
+  for (year = 1996; year <= 2015; year++) {
     var url = 'scrape/' + year + '.html';
     pages.push($.get(url));
   }
@@ -35,12 +35,14 @@ $(function(){
     });
 
     // slurp invisible divs to produce JSON
-    var cases = [];
-    $('.case').each(function(ii, caseData){
-
-      // TODO: don't push caseData, build an object from selectors on caseData and push that
-      cases.push(caseData);
-    });
+    var cases = $('.case').map(function(){
+      return {
+        casenum : $(this).find('.casenum').text().split(':')[1].trim(),
+        date : $(this).find('.date').text().trim(),
+        keywords : $(this).find('.keywords').text().trim().split(/\s*[,;:]\s*/),
+        digest : $(this).find('.digest').text().trim(),
+      }
+    }).get();
 
     $('#output').append('<pre>' + JSON.stringify(cases, null, 2) + '</pre>');
 
