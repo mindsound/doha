@@ -10,7 +10,7 @@ $(function(){
   var pages = [];
 
   // load page contents into invisible divs
-  for (year = 1996; year <= 2015; year++) {
+  for (year = 1996; year <= 1996; year++) {
     var url = 'scrape/' + year + '.html';
     pages.push($.get(url));
   }
@@ -20,8 +20,18 @@ $(function(){
     // push everything to a hidden div so we can iterate over everything at once
     $.each(arguments, function(ii, data) {
       $('#data').append("<div id='response-" + ii + "' style='display:none;'></div>");
-      var responseBody = data[0];
-      $('#response-' + ii).append($(responseBody).filter('.case-list'));
+
+      // data will either be a string or a tuple whose first element is a string, dammit
+      var response;
+      if (typeof data === 'string') {
+        response = data;
+      } else {
+        response = data[0];
+      }
+
+      var responseBody = $(response);
+      var caseListDiv = responseBody.filter('.case-list');
+      $('#response-' + ii).append(caseListDiv);
     });
 
     // slurp invisible divs to produce JSON
