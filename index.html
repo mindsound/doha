@@ -56,6 +56,11 @@
     var keywordCounts = {};
     $.each(data, function(ii, record){
       $.each(record.keywords, function(jj, keyword){
+        keyword = shadilyNormalizeKeyword(keyword);
+        if (keyword == '') {
+          return;
+        }
+
         if (keywordCounts[keyword] == null) {
           keywordCounts[keyword] = 0;
         }
@@ -64,8 +69,100 @@
       });
     });
 
-    alert(JSON.stringify(keywordCounts, null, 2));
+    // remove trash
+    $.each(keywordCounts, function(key, value) {
+      if (value < 5) {
+        delete keywordCounts[key];
+      }
+    });
+
+    $(".visualizations").append('<pre>' + JSON.stringify(keywordCounts, null, 2) + '</pre>');
 
   }
+
+  // http://stackoverflow.com/questions/4878756/javascript-how-to-capitalize-first-letter-of-each-word-like-a-2-word-city
+  function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+  }
+
+  function shadilyNormalizeKeyword(keyword) {
+    // normalize case
+    keyword = toTitleCase(keyword.toLowerCase());
+
+    // remove junk
+    keyword = keyword.replace(/['.]$/, '');
+    keyword = keyword.replace(/^And\s*/, '');
+
+    for (var ii = 0; ii < FIND_SUBSTRING.length; ii++) {
+      if (keyword.indexOf(FIND_SUBSTRING[ii].substring) >= 0) {
+        return FIND_SUBSTRING[ii].value;
+      }
+    }
+
+    for (var ii = 0; ii < FIND_REGEX.length; ii++) {
+      if (keyword.search(FIND_REGEX[ii].regex) >= 0) {
+        return FIND_REGEX[ii].value;
+      }
+    }
+
+    // sigh
+    if (keyword.indexOf('Foreign') >= 0 && keyword.indexOf('Preference') < 0) {
+      return 'Foreign Influence';
+    }
+
+    keyword = replaceGuidelines(keyword);
+
+    return keyword;
+  }
+
+  function replaceGuidelines(keyword) {
+    if (Object.keys(GUIDELINES).indexOf(keyword) >= 0) {
+      return GUIDELINES[keyword];
+    } else {
+      return keyword;
+    }
+  }
+
+  // per http://www.dtic.mil/whs/directives/corres/pdf/522006p.pdf E2.2.3
+  var GUIDELINES = {
+    'Guideline A': 'Allegiance',
+    'Guideline B': 'Foreign Influence',
+    'Guideline C': 'Foreign Preference',
+    'Guideline D': 'Sexual Behavior',
+    'Guideline E': 'Personal Conduct',
+    'Guideline F': 'Financial',
+    'Guideline G': 'Alcohol',
+    'Guideline H': 'Drugs',
+    'Guideline I': 'Mental',
+    'Guideline J': 'Criminal Conduct',
+    'Guideline K': 'Security Violations',
+    'Guideline L': 'Outside Activities',
+    'Guideline M': 'Information Technology',
+  }
+
+  // cleanup
+  var FIND_SUBSTRING = [
+    { substring: 'Drug', value: 'Drugs'},
+    { substring: 'Alcoho', value: 'Alcohol'},
+    { substring: 'Financ', value: 'Financial'},
+    { substring: 'Protected', value: 'Security Violations'},
+    { substring: 'Information', value: 'Information Technology'},
+    { substring: 'Criminal', value: 'Criminal Conduct'},
+    { substring: 'Disorder', value: 'Mental'},
+    { substring: 'Preference', value: 'Foreign Preference'},
+    { substring: 'Sexu', value: 'Sexual Behavior'},
+    { substring: 'Person', value: 'Personal Conduct'},
+    { substring: 'Owe', value: 'Financial'},
+    { substring: 'Debt', value: 'Financial'},
+    { substring: 'Security', value: 'Security Violations'},
+    { substring: 'Psych', value: 'Mental'},
+    { substring: 'Emo', value: 'Mental'},
+    { substring: 'Fals', value: 'Personal Conduct'}
+  ]
+  var FIND_REGEX = [
+    { regex: /Foreign [IL]nf/, value: 'Foreign Influence'},
+    { regex: /Foreign (Int|P)/, value: 'Foreign Preference'},
+  ]
+
 </script>
 </html>
