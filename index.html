@@ -52,9 +52,12 @@
 
     $('.placeholder').replaceWith('<div>Loaded ' + data.length + ' records.</div>');
 
-    // accumulate keyword counts
+    // accumulate metadata
     var keywordCounts = {};
+    var decisionCounts = { denied: 0, granted: 0, remanded: 0, unparseable: 0 };
+    var unprocessedDigests = [];
     $.each(data, function(ii, record){
+      // count keywords
       $.each(record.keywords, function(jj, keyword){
         keyword = shadilyNormalizeKeyword(keyword);
         if (keyword == '') {
@@ -66,7 +69,35 @@
         }
 
         keywordCounts[keyword] += 1;
+
       });
+
+      // count decisions
+      var digest = record.digest.toLowerCase().replace(/(?:\r\n|\r|\n)/g, ' ');;
+      if (digest.indexOf('denied') >= 0
+          || digest.indexOf('adverse decision affirmed') >= 0
+          || digest.indexOf('adverse decision sustained') >= 0
+          || digest.indexOf('adverse decision is') >= 0
+          || digest.indexOf('favorable decision reversed') >= 0
+          || digest.indexOf('not been mitigated') >= 0
+          || digest.indexOf('failed to mitigate') >= 0
+          || digest.indexOf('not mitigated') >= 0
+          || digest.indexOf('revoked') >= 0
+          || digest.indexOf('unacceptable') >= 0
+          ) {
+        decisionCounts.denied += 1;
+      }  else if (digest.indexOf('granted') >= 0
+          || digest.indexOf('adverse decision reversed') >= 0
+          || digest.indexOf('favorable decision affirmed') >= 0
+          ) {
+        decisionCounts.granted += 1;
+      } else if (digest.indexOf('remand') >= 0) {
+        decisionCounts.remanded += 1;
+      } else {
+        decisionCounts.unparseable += 1;
+        unprocessedDigests.push(digest);
+      }
+
     });
 
     // remove trash
@@ -76,7 +107,9 @@
       }
     });
 
-    $(".visualizations").append('<pre>' + JSON.stringify(keywordCounts, null, 2) + '</pre>');
+    $(".visualizations")
+      .append('<pre>' + JSON.stringify(keywordCounts, null, 2) + '</pre>')
+      .append('<pre>' + JSON.stringify(decisionCounts, null, 2) + '</pre>');
 
   }
 
